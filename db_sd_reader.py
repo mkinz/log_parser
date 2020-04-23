@@ -30,3 +30,6 @@ def read_from_db(args):
 def main():
     parser = arg_parser(sys.argv[1:])
     read_from_db(parser)
+
+if __name__ == '__main__':
+    main()
