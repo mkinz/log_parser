@@ -1,32 +1,56 @@
 #!/bin/bash
 
 #############################################################
-# This script runs the error parser application on a cron job
+# This script runs the log parser suite of apps on a cron job
 # mails the output to a recipient, and cleans the working dir
 #############################################################
 
 
-# get today's date
-mydate=$(date +"%m-%d-%Y")
+# get today's date as name of reporter file
+email_report=$(date +"%m-%d-%Y")
 
 
 # cd to the current working directory
-cd /home/mkinzler/utilities
+cd /users/home/mkinzler/scripts/utilities/logparser/
 
 
-# runner for the python script and output filename as mydate
-python error_parser.py /path/to/log/file/file.log &> $mydate
+# runner for the sd parser
+python sd_log_parser.py /mfgData/logs/prod/SendDataBatch/SendDataBatch.log "TEMP_DATABASE" "TEMP_TABLE"
 
 
-# mailer and redirect mydate as stdin
-/usr/sbin/sendmail matthew.kinzler@gmail.com < $mydate
+# runner for the python script which redirects output to the email report
+python error_parser.py /mfgData/logs/prod/SendDataBatch/SendDataBatch.log &> $email_report
+
+
+# header for the db browser section of the email
+echo "#############################################################" >> $email_report
+echo "Some high runners you may want to investigate are shown below" >> $email_report
+echo "#############################################################" >> $email_report
+echo "[date] [order] [transfer time]" >> $email_report
+
+
+# runner for the db browser specifying time greater than 600 seconds for the sql query
+python db_sd_reader.py "TEMP_DATABASE.db" "TEMP_TABLE" -t 600 >> $email_report
+
+
+# mailer redirects file $email_report as stdin and emails to recipients
+#/usr/sbin/sendmail matthew.kinzler@globalfoundries.com < $email_report 
+/usr/sbin/sendmail matthew.kinzler@globalfoundries.com, john.gilbert@globalfoundries.com, dave.merchant@globalfoundries.com, donald.deanjr@globalfoundries.com < $email_report
 
 
 # make dir to store file if it doesnt exist
-if [ ! -d /home/mkinzler/scripts/errors ]; then
-      mkdir -p /home/mkinzler/scripts/errors; 
+if [ ! -d /users/home/mkinzler/scripts/senddata_email_reports ]; then
+      mkdir -p /users/home/mkinzler/scripts/senddata_email_reports; 
 fi;
 
 
-# move file to backup dir 
-mv $mydate /home/mkinzler/scripts/errors/
+# move report file to backup dir 
+mv $email_report /users/home/mkinzler/scripts/senddata_email_reports
+
+
+# remove temp database 
+rm "TEMP_DATABASE.db"
+
+
+# done message
+echo "runner.sh completed successfully"
