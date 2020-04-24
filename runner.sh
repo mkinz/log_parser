@@ -11,15 +11,15 @@ email_report=$(date +"%m-%d-%Y")
 
 
 # cd to the current working directory
-cd /users/home/mkinzler/scripts/utilities/logparser/
+cd /home/mkinzler/scripts/utilities/logparser/
 
 
 # runner for the sd parser
-python sd_log_parser.py /mfgData/logs/prod/SendDataBatch/SendDataBatch.log "TEMP_DATABASE" "TEMP_TABLE"
+python sd_log_parser.py /path/to/log/file.log "TEMP_DATABASE" "TEMP_TABLE"
 
 
 # runner for the python script which redirects output to the email report
-python error_parser.py /mfgData/logs/prod/SendDataBatch/SendDataBatch.log &> $email_report
+python error_parser.py /path/to/log/file.log &> $email_report
 
 
 # header for the db browser section of the email
@@ -34,18 +34,17 @@ python db_sd_reader.py "TEMP_DATABASE.db" "TEMP_TABLE" -t 600 >> $email_report
 
 
 # mailer redirects file $email_report as stdin and emails to recipients
-#/usr/sbin/sendmail matthew.kinzler@globalfoundries.com < $email_report 
-/usr/sbin/sendmail matthew.kinzler@globalfoundries.com, john.gilbert@globalfoundries.com, dave.merchant@globalfoundries.com, donald.deanjr@globalfoundries.com < $email_report
+/usr/sbin/sendmail matthew.kinzler@gmail.com < $email_report 
 
 
 # make dir to store file if it doesnt exist
-if [ ! -d /users/home/mkinzler/scripts/senddata_email_reports ]; then
-      mkdir -p /users/home/mkinzler/scripts/senddata_email_reports; 
+if [ ! -d /home/mkinzler/scripts/email_reports ]; then
+      mkdir -p /home/mkinzler/scripts/email_reports; 
 fi;
 
 
 # move report file to backup dir 
-mv $email_report /users/home/mkinzler/scripts/senddata_email_reports
+mv $email_report /users/home/mkinzler/scripts/mail_reports
 
 
 # remove temp database 
