@@ -7,13 +7,13 @@ import sys
 import os
 
 # get input args
-def parse_args():
+def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', type=str, help='Input file to parse for data')
     parser.add_argument('db_name', type=str, help='Database file name')
     parser.add_argument('table_name', type=str, help='Table name in database')
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
+    
 
 
 # define the regex with group capture for mops order and time
@@ -23,8 +23,7 @@ def get_regex():
 
 
 # open file, find regex matches, and return list of matches
-def find_matches(): 
-    args = parse_args()
+def find_matches(args): 
     found_stuff = []
     with open(args.input_file, "r") as f:
         mydata = f.read()
@@ -36,9 +35,8 @@ def find_matches():
     return res
 
 
-def get_database_name():
-    # check to see if database name ends with .db; if not, set it
-    args = parse_args()    
+def get_database_name(args):
+    # check to see if database name ends with .db; if not, set it 
     database_name = args.db_name
     if not database_name.endswith(".db"):
         database_name = args.db_name + ".db"
@@ -46,9 +44,8 @@ def get_database_name():
 
 
 # db creation for sorting and viewing data
-def create_write_db(matched_data):
-    args = parse_args() 
-    myDB = get_database_name()
+def create_write_db(matched_data, args):
+    myDB = get_database_name(args)
     
     # create db, table
     conn = sqlite3.connect(myDB) 
@@ -69,9 +66,8 @@ def create_write_db(matched_data):
 
 
 
-def check_input_args():
-    args = parse_args()
-    myDB = get_database_name() 
+def check_input_args(args):
+    myDB = get_database_name(args) 
     # prevent a dot character from being in the table name
     if "." in args.table_name:
         print "Cannot have . in table name!"
@@ -94,8 +90,9 @@ def check_input_args():
 
 
 def main():
-    check_input_args()
-    create_write_db(find_matches())
+	parser = parse_args(sys.argv[1:])
+    check_input_args(parser)
+    create_write_db(find_matches(parser), parser)
 
 
 if __name__=='__main__':
