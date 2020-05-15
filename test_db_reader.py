@@ -29,7 +29,7 @@ class TestDBreader:
         assert my_namespace == result
 
 
-    def test_read_from_db(self, cursor):
+    def test_read_from_db_without_args(self, cursor):
         expected_output = ["hello"]
         cursor.fetchall.return_value = expected_output
         data_from_database = db_sd_reader.read_from_db(self.get_namespace(), cursor)
