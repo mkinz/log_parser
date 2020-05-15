@@ -50,5 +50,31 @@ class TestDBreader:
 
         assert expected_output == data_from_database
 
+    def test_read_from_db_with_date(self, cursor):
+        ns = self.get_namespace()
+        ns.date = '04-25'
+        ns.time = None
+        expected_output = [ns.date]
+
+        cursor.fetchall.return_value = expected_output
+        data_from_database = db_sd_reader.read_from_db(ns, cursor)
+        cursor.execute.assert_called_once_with(f"select * from {ns.table_name} where date like ('%{ns.date}%') order by time desc")
+        cursor.fetchall.assert_called_once()
+
+        assert expected_output == data_from_database
+
+    def test_read_from_db_with_date_and_time(self, cursor):
+        ns = self.get_namespace()
+        ns.date = '04-25'
+        ns.time = 10
+        expected_output = [ns.date, ns.time]
+
+        cursor.fetchall.return_value = expected_output
+        data_from_database = db_sd_reader.read_from_db(ns, cursor)
+        cursor.execute.assert_called_once_with(f"select * from {ns.table_name} where date like ('%{ns.date}%') and time >= {ns.time} order by time desc")
+        cursor.fetchall.assert_called_once()
+
+        assert expected_output == data_from_database
+
 if __name__ == '__main__':
     unittest.main()
